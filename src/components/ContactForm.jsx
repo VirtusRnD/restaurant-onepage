@@ -1,15 +1,14 @@
 import { useState } from 'react'
 import Button from './Button'
 import Reveal from './Reveal'
+import { submitForm } from '../lib/submitForm'
+import { SITE } from '../data/site'
 
 /**
- * Theme-able contact/reservation form. UI + local state only — no backend
- * wired up. Pass onSubmit to handle real submission (e.g. POST to a
- * reservation API, mailto, or a form service like Formspree). Falls back
- * to console logging + a visible confirmation state so it's demo-able as-is.
- *
- * fields: which inputs to show — reservation forms want 'date'/'guests',
- * a plain contact form can drop them.
+ * Theme-able contact/reservation/booking form. Submits through submitForm(): a JSON POST
+ * to VITE_FORM_ENDPOINT when it is set, otherwise the visitor's mail app addressed to
+ * SITE.email. The thank-you state only shows after the request actually went through.
+ * Pass onSubmit to handle submission yourself instead.
  */
 export default function ContactForm({
   title = 'Reserve a Table',
@@ -17,7 +16,7 @@ export default function ContactForm({
   showReservationFields = true,
   onSubmit,
 }) {
-  const [submitted, setSubmitted] = useState(false)
+  const [status, setStatus] = useState('idle') // idle | sending | sent | mailto | error
   const [values, setValues] = useState({
     name: '',
     email: '',
@@ -30,14 +29,19 @@ export default function ContactForm({
     setValues((v) => ({ ...v, [e.target.name]: e.target.value }))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    if (onSubmit) {
-      onSubmit(values)
-    } else {
-      console.log('Reservation/contact submission:', values)
+    setStatus('sending')
+    try {
+      if (onSubmit) {
+        await onSubmit(values)
+        setStatus('sent')
+      } else {
+        setStatus(await submitForm(values, { email: SITE.email, subject: `${title} - ${SITE.name}` }))
+      }
+    } catch {
+      setStatus('error')
     }
-    setSubmitted(true)
   }
 
   const inputClass =
@@ -51,11 +55,13 @@ export default function ContactForm({
           <p className="font-body text-brand-muted">{subtitle}</p>
         </div>
 
-        {submitted ? (
+        {status === 'sent' || status === 'mailto' ? (
           <div className="text-center bg-brand-surface rounded-2xl p-10 border border-brand-border">
             <p className="font-heading text-2xl text-brand-primary mb-2">Thank you!</p>
             <p className="font-body text-brand-muted">
-              We've received your request and will be in touch shortly.
+              {status === 'sent'
+                ? "We've received your request and will be in touch shortly."
+                : 'Your mail app has opened with your message. Press send and we will be in touch.'}
             </p>
           </div>
         ) : (
@@ -114,7 +120,12 @@ export default function ContactForm({
               className={inputClass}
             />
 
-            <Button type="submit" variant="primary" className="w-full">
+            {status === 'error' && (
+              <p role="alert" className="font-body text-sm text-red-700 text-center">
+                Something went wrong and your message was not sent. Please try again or email {SITE.email}.
+              </p>
+            )}
+            <Button type="submit" variant="primary" className="w-full" disabled={status === 'sending'}>
               {showReservationFields ? 'Request Reservation' : 'Send Message'}
             </Button>
           </form>

@@ -6,6 +6,7 @@ export const SITE = {
   name: 'Ember & Oak',
   address: '123 Main St, Your City',
   phone: '(555) 123-4567',
+  email: 'hello@example.com', // replace before launch: the form falls back to this address
   hours: 'Mon–Sun: 11am – 10pm',
   social: [
     { label: 'Instagram', href: '#' },

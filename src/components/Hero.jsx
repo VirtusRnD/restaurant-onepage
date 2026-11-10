@@ -38,7 +38,7 @@ export default function Hero({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="font-body uppercase tracking-[0.2em] text-brand-accent text-sm mb-4"
+          className="font-body uppercase tracking-[0.2em] text-brand-primary font-semibold text-sm mb-4"
         >
           {eyebrow}
         </motion.p>
@@ -54,7 +54,7 @@ export default function Hero({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="font-body text-lg text-brand-muted max-w-xl mx-auto mb-8"
+          className="font-body text-lg text-brand-text max-w-xl mx-auto mb-8"
         >
           {subtitle}
         </motion.p>
